@@ -17,9 +17,7 @@ The `Security` workflow runs CodeQL on the Go and TypeScript code on every push,
 gh api --method PUT repos/giggly9990/ravenseed/vulnerability-alerts
 gh api --method PUT repos/giggly9990/ravenseed/automated-security-fixes
 gh api --method PUT repos/giggly9990/ravenseed/private-vulnerability-reporting
-gh api --method PATCH repos/giggly9990/ravenseed --input - <<'EOF'
-{"security_and_analysis": {"secret_scanning": {"status": "enabled"}, "secret_scanning_push_protection": {"status": "enabled"}}}
-EOF
+gh api --method PATCH repos/giggly9990/ravenseed -f "security_and_analysis[secret_scanning][status]=enabled" -f "security_and_analysis[secret_scanning_push_protection][status]=enabled"
 ```
 
 These turn on Dependabot alerts and security fixes, private reporting through [SECURITY.md](../SECURITY.md), and secret scanning that blocks pushes containing known token formats. Dependabot security fixes target `main`, not `develop`.
