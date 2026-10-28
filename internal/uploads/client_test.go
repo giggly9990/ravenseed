@@ -184,6 +184,7 @@ func TestSafeLink(t *testing.T) {
 		"https://tracker.example/torrents/9?id=0123456789abcdef0123456789abcdef":      "",
 		"https://tracker.example/torrents/9#0123456789abcdef0123456789abcdef":         "",
 		"https://user:pass@tracker.example/torrents/9":                                "",
+
 		"javascript:alert(1)": "",
 		"/torrents/9":         "",
 	} {

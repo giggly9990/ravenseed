@@ -1,0 +1,51 @@
+name: Bug report
+description: Something does not work as documented.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Redact API keys, passkeys, tokens and tracker download links from everything below. Report security problems privately through the Security tab instead.
+  - type: input
+    id: version
+    attributes:
+      label: RavenSeed version
+      description: Output of `ravenseed version`, or the image tag.
+      placeholder: 0.6.0
+    validations:
+      required: true
+  - type: dropdown
+    id: install
+    attributes:
+      label: Install method
+      options:
+        - Docker image (GHCR)
+        - Docker Compose built from source
+        - .deb / .rpm / .apk package
+        - Release archive
+        - Built from source
+    validations:
+      required: true
+  - type: input
+    id: qui
+    attributes:
+      label: qui version
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: Include the steps to reproduce it.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Relevant lines from `docker compose logs ravenseed` or `journalctl -u ravenseed`.
+      render: shell
