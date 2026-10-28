@@ -1,0 +1,13 @@
+services:
+  ravenseed:
+    environment:
+      AUTH_MODE: session
+      WEB_USERNAME: admin
+      WEB_PASSWORD_FILE: /run/secrets/web_password
+      WEB_COOKIE_SECURE: "true"
+    secrets:
+      - web_password
+
+secrets:
+  web_password:
+    file: ./secrets/web_password

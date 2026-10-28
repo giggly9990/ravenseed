@@ -1,0 +1,37 @@
+name: Prune GHCR images
+
+# After the first release: run this manually, inspect the deletion plan and
+# validation warnings, and confirm both platform images can be pulled.
+# Then enable the weekly schedule below and change dry-run to false.
+on:
+  workflow_dispatch:
+  # schedule:
+  #   - cron: '0 4 * * 0'
+
+permissions:
+  packages: write
+
+# The cleanup action must not run concurrently against the same package.
+concurrency:
+  group: ghcr-prune-ravenseed
+  cancel-in-progress: false
+
+jobs:
+  prune:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Preview GHCR retention
+        uses: dataaxiom/ghcr-cleanup-action@d52806a0dc70b430571a37da1fde39733ffd640f # v1.2.2
+        with:
+          owner: giggly9990
+          package: ravenseed
+          token: ${{ secrets.GITHUB_TOKEN }}
+          # This action resolves multi-platform children before selecting images.
+          delete-untagged: true
+          delete-ghost-images: true
+          delete-partial-images: true
+          # latest is excluded before counting: keep it plus two older releases.
+          keep-n-tagged: 2
+          exclude-tags: latest
+          validate: true
+          dry-run: true

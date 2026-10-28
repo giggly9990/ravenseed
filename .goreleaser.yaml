@@ -1,0 +1,83 @@
+version: 2
+project_name: ravenseed
+# dist/ holds local demo exports; --clean would delete them.
+dist: .release
+
+before:
+  hooks:
+    - npm --prefix web ci --no-audit --no-fund
+    - npm --prefix web run build
+
+builds:
+  - id: ravenseed
+    main: ./cmd/server
+    binary: ravenseed
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w -X main.version={{ .Version }}
+    goos: [linux, windows, darwin]
+    goarch: [amd64, arm64]
+
+archives:
+  - id: ravenseed
+    formats: [tar.gz]
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+    name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}'
+    files:
+      - LICENSE
+      - README.md
+      - .env.example
+      - src: web/dist/**/*
+        dst: web
+
+nfpms:
+  - id: ravenseed
+    package_name: ravenseed
+    file_name_template: '{{ .PackageName }}_{{ .Version }}_{{ .Arch }}'
+    homepage: https://github.com/giggly9990/ravenseed
+    maintainer: giggly9990 <256953737+giggly9990@users.noreply.github.com>
+    license: AGPL-3.0-or-later
+    description: Finds equivalent releases across the indexers configured in qui.
+    formats: [deb, rpm, apk]
+    bindir: /usr/bin
+    contents:
+      - src: web/dist/
+        dst: /usr/share/ravenseed/web
+        type: tree
+      - src: LICENSE
+        dst: /usr/share/doc/ravenseed/LICENSE
+      - src: packaging/ravenseed.service
+        dst: /usr/lib/systemd/system/ravenseed.service
+      - src: packaging/ravenseed.env
+        dst: /etc/ravenseed/ravenseed.env
+        type: config|noreplace
+        file_info:
+          mode: 0640
+    scripts:
+      preinstall: packaging/preinstall.sh
+      postinstall: packaging/postinstall.sh
+      preremove: packaging/preremove.sh
+
+checksum:
+  name_template: checksums.txt
+
+changelog:
+  use: github
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^chore\(deps\)'
+
+release:
+  github:
+    owner: giggly9990
+    name: ravenseed
+  prerelease: auto
+  draft: false

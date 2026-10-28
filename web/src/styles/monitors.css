@@ -1,0 +1,501 @@
+/* monitors screen styles. Uses tokens from base.css only. */
+
+/* ---------- Monitor pair cards ---------- */
+.mon-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  align-items: start;
+  gap: 10px;
+}
+.mon-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  transition:
+    border-color 0.12s,
+    box-shadow 0.12s;
+}
+.mon-card:hover {
+  border-color: var(--line-strong);
+}
+.mon-card.selected {
+  border-color: var(--accent);
+  box-shadow: var(--ring);
+}
+.mon-card-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.mon-card-head .icon-button {
+  position: relative;
+  z-index: 1;
+}
+.mon-card-head .spacer {
+  min-width: 0;
+}
+/* The pair name is the card's select button; its hit area covers the card. */
+.mon-card-select {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 650;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mon-card-select::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+.mon-card-select:focus-visible {
+  outline: none;
+}
+.mon-card:has(.mon-card-select:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.mon-card .pill {
+  height: 20px;
+  padding: 0 6px;
+  background: var(--surface-3);
+  color: var(--text-2);
+  font-weight: 600;
+}
+.mon-card-meta {
+  overflow-wrap: anywhere;
+  font-size: 11px;
+  color: var(--faint);
+}
+.mon-card-counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.mon-card-counts strong {
+  color: var(--text);
+  font-weight: 600;
+}
+.mon-card-counts .hot strong {
+  color: var(--accent-text);
+}
+.mon-card-counts .review strong {
+  color: var(--warn-text);
+}
+/* Compact xD notice inside a card */
+.mon-card-error {
+  position: relative;
+  z-index: 1;
+}
+.mon-card-error .raven-error {
+  gap: 8px;
+  padding: 6px 8px;
+  font-size: 12px;
+  line-height: 1.4;
+  border-radius: 6px;
+}
+.mon-card-error .raven-error-mark {
+  margin-right: 6px;
+}
+.mon-card-error .raven-error-mark > svg {
+  width: 22px;
+  height: 22px;
+}
+.mon-card-error .raven-error-mark > .raven-xd {
+  top: -7px;
+  right: -12px;
+  font-size: 10px;
+}
+.mon-card-error .raven-error-body {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ---------- Candidates + detail ---------- */
+.mon-workspace {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: flex-start;
+}
+.mon-candidates {
+  flex: 999 1 560px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.mon-chips {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+}
+.mon-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--line);
+}
+.mon-search {
+  flex: 1 1 220px;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--field-line);
+  border-radius: var(--radius);
+  background: var(--field);
+  color: var(--faint);
+}
+.mon-search:focus-within {
+  border-color: var(--accent);
+  box-shadow: var(--ring);
+}
+.mon-search
+  > input:not([type="checkbox"]):not([type="radio"]):not([type="range"]) {
+  flex: 1;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+.mon-search > input:focus {
+  box-shadow: none !important;
+}
+.mon-toolbar .button[aria-expanded="true"] {
+  border-color: var(--accent-soft-line);
+  color: var(--accent-text-strong);
+}
+.mon-toolbar .count-badge {
+  min-width: 16px;
+  height: 16px;
+  font-size: 10px;
+}
+.mon-queue {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--faint);
+}
+.mon-more {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  align-items: end;
+  gap: 10px;
+  padding: 10px 12px 12px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface-2);
+}
+.mon-more input:not([type="checkbox"]):not([type="radio"]),
+.mon-more .select-trigger {
+  height: 30px;
+  font-size: 12px;
+}
+.mon-more .link-button {
+  justify-self: start;
+  height: 30px;
+}
+
+/* Candidate table */
+.mon-table {
+  table-layout: fixed;
+  min-width: 620px;
+}
+.mon-table th:nth-child(2) {
+  width: 92px;
+}
+.mon-table th:nth-child(3) {
+  width: 124px;
+}
+.mon-table th:nth-child(4) {
+  width: 84px;
+}
+.mon-table th:nth-child(5) {
+  width: 118px;
+}
+.mon-table tbody tr {
+  cursor: pointer;
+}
+.mon-table td {
+  height: 46px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+.mon-release {
+  min-width: 0;
+}
+.mon-row-select {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
+}
+.mon-row-select:focus-visible {
+  outline-offset: 1px;
+  border-radius: 3px;
+}
+.mon-release .cell-title,
+.mon-release .cell-sub {
+  display: block;
+}
+.mon-table .num {
+  color: var(--text-2);
+  white-space: nowrap;
+}
+.mon-nowrap {
+  white-space: nowrap;
+}
+
+/* Detail panel */
+.mon-detail {
+  flex: 1 1 340px;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  border-color: var(--accent-soft-line);
+  position: sticky;
+  top: 14px;
+}
+.mon-detail.empty {
+  border-color: var(--line);
+  align-items: center;
+  justify-content: center;
+  min-height: 160px;
+  text-align: center;
+}
+.mon-detail-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.mon-detail-close {
+  margin-left: auto;
+}
+.mon-detail-name {
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.45;
+  word-break: break-all;
+}
+.mon-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.mon-dl {
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr);
+  gap: 6px 10px;
+  font-size: 12px;
+}
+.mon-dl dt {
+  color: var(--faint);
+}
+.mon-dl dd {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--text-2);
+}
+.mon-policy {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--bg-sunken);
+  font-size: 12px;
+  color: var(--text-2);
+}
+.mon-policy .policy-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.mon-policy .policy-summary p {
+  font-size: 12px;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+.mon-policy .policy-summary strong {
+  color: var(--text);
+  font-weight: 600;
+}
+.mon-policy ul {
+  margin: 0;
+  padding-left: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--text-3);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.mon-policy .policy-target-results ul {
+  padding-left: 0;
+  list-style: none;
+}
+.mon-policy .policy-target-results li {
+  font-size: 11px;
+  color: var(--faint);
+}
+.mon-policy .policy-target-results li > a,
+.mon-policy .policy-target-results li > strong {
+  font-family: var(--font-mono);
+  font-weight: 400;
+  color: var(--text-3);
+}
+.mon-policy li small {
+  display: block;
+  color: var(--faint);
+  font-size: 11px;
+}
+.mon-policy > .policy-summary > small {
+  font-size: 11px;
+  color: var(--faint);
+}
+.mon-detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.mon-detail-actions .button {
+  height: 34px;
+}
+.mon-grow {
+  flex: 1;
+}
+
+/* Send to UA dialog */
+.mon-picked {
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--bg-sunken);
+}
+.mon-checks {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+}
+.mon-checks li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.mon-checks .ok {
+  color: var(--ok-text);
+}
+.mon-checks .bad {
+  color: var(--danger-text);
+}
+
+@media (max-width: 820px) {
+  .mon-detail {
+    max-width: none;
+    position: static;
+  }
+  .mon-queue {
+    margin-left: 0;
+    flex-basis: 100%;
+  }
+  .mon-table {
+    min-width: 500px;
+  }
+  .mon-table th:nth-child(4),
+  .mon-table td:nth-child(4) {
+    display: none;
+  }
+}
+.mon-id-pill {
+  margin-left: 6px;
+}
+.mon-id-error {
+  display: block;
+  margin-top: 2px;
+}
+.mon-sort {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.mon-sort:hover,
+.mon-sort:focus-visible {
+  color: var(--text);
+}
+.upg-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+}
+.upg-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+.upg-cell {
+  display: table-cell;
+  min-width: 0;
+}
+.upg-cell .cell-title,
+.upg-cell .cell-sub {
+  display: block;
+}
+.upg-actions {
+  white-space: nowrap;
+}
+.upg-actions > * + * {
+  margin-left: 6px;
+}
+.mon-instances {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+.mon-instances legend {
+  width: 100%;
+  margin-bottom: 5px;
+  padding: 0;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-3);
+}

@@ -1,0 +1,12 @@
+services:
+  ravenseed:
+    environment:
+      QUI_URL: http://qui:7476
+    networks:
+      - default
+      - qui
+
+networks:
+  qui:
+    external: true
+    name: ${QUI_NETWORK:-qui_default}

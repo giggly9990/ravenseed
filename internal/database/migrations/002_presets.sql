@@ -1,0 +1,5 @@
+CREATE TABLE indexer_presets (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL COLLATE NOCASE UNIQUE,
+    payload BLOB NOT NULL
+);

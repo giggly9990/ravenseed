@@ -1,0 +1,58 @@
+services:
+  ravenseed:
+    build:
+      context: .
+      target: runtime
+    image: ravenseed:local
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ:-UTC}
+      QUI_URL: ${QUI_URL:-}
+      QUI_API_KEY: ${QUI_API_KEY:-}
+      TMDB_TOKEN: ${TMDB_TOKEN:-}
+      DATABASE_PATH: /data/discovery.db
+      LISTEN_ADDR: 0.0.0.0
+      LISTEN_PORT: 8080
+      PUBLISHED_BIND_ADDRESS: ${BIND_ADDRESS:-127.0.0.1}
+      ALLOW_UNAUTHENTICATED_REMOTE: ${ALLOW_UNAUTHENTICATED_REMOTE:-false}
+      TRUSTED_PROXIES: ${TRUSTED_PROXIES:-}
+      # Without auth, only loopback Host names are served. To open the UI by a
+      # LAN name or IP (BIND_ADDRESS), list them, e.g. ravenseed.lan,192.168.1.10
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-}
+      MAX_CONCURRENT_UPLOADS: ${MAX_CONCURRENT_UPLOADS:-1}
+      UA_SUBMISSION_INTERVAL: ${UA_SUBMISSION_INTERVAL:-1m}
+      HISTORY_RETENTION: ${HISTORY_RETENTION:-0}
+      RAW_RESULT_RETENTION: ${RAW_RESULT_RETENTION:-0}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      # Empty: none without API_TOKEN, token mode with it. session = browser login.
+      AUTH_MODE: ${AUTH_MODE:-}
+      API_TOKEN: ${API_TOKEN:-}
+      WEB_USERNAME: ${WEB_USERNAME:-}
+      WEB_PASSWORD: ${WEB_PASSWORD:-}
+      WEB_PASSWORD_FILE: ${WEB_PASSWORD_FILE:-}
+      WEB_PASSWORD_HASH: ${WEB_PASSWORD_HASH:-}
+      WEB_PASSWORD_HASH_FILE: ${WEB_PASSWORD_HASH_FILE:-}
+      WEB_COOKIE_SECURE: ${WEB_COOKIE_SECURE:-true}
+      DEFAULT_TARGET_INDEXER: ${DEFAULT_TARGET_INDEXER:-0}
+      DEFAULT_MIN_COVERAGE: ${DEFAULT_MIN_COVERAGE:-2}
+      SEARCH_TIMEOUT: ${SEARCH_TIMEOUT:-3m}
+      MAX_CONCURRENT_SEARCHES: ${MAX_CONCURRENT_SEARCHES:-4}
+      MAX_ACTIVE_JOBS: ${MAX_ACTIVE_JOBS:-8}
+      RESULT_CACHE_TTL: ${RESULT_CACHE_TTL:-24h}
+    ports:
+      - "${BIND_ADDRESS:-127.0.0.1}:${APP_PORT:-8088}:8080"
+    volumes:
+      - discovery-data:/data
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp:size=16m,mode=1777
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    stop_grace_period: 20s
+
+volumes:
+  discovery-data:
