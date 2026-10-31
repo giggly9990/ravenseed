@@ -1,6 +1,6 @@
 version: 2
 project_name: ravenseed
-# dist/ holds local demo exports; --clean would delete them.
+# dist/ may hold untracked local files; --clean would delete them.
 dist: .release
 
 before:

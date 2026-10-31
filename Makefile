@@ -1,6 +1,6 @@
-DEMO = docker compose -p ravenseed-demo -f docker-compose.yml -f docker-compose.demo.yml
+TEST_STACK = docker compose -p ravenseed-demo -f docker-compose.yml -f docker-compose.demo.yml
 
-.PHONY: test test-race fmt-check smoke demo-down build up down
+.PHONY: test test-race fmt-check smoke test-stack-down build up down
 
 # Installs web dependencies only when package-lock.json changed.
 web/node_modules/.package-lock.json: web/package-lock.json
@@ -19,16 +19,15 @@ fmt-check: web/node_modules/.package-lock.json
 	@files="$$(gofmt -l cmd internal)"; if [ -n "$$files" ]; then echo "gofmt needed:"; echo "$$files"; exit 1; fi
 	cd web && npm run format:check
 
-# Starts the demo stack, seeds it and runs the search and read-only smoke
-# tests. `make demo-down` removes it with its data.
+# Starts the test stack, seeds it and runs the search smoke test.
+# `make test-stack-down` removes it with its data.
 smoke:
-	$(DEMO) up -d --build --wait --wait-timeout 300 ravenseed mock-qui demo-proxy
+	$(TEST_STACK) up -d --build --wait --wait-timeout 300
 	MOCK_QUI_URL=http://mock-qui:7476 node scripts/demo-seed.mjs http://localhost:8090
 	node scripts/smoke.mjs http://localhost:8090
-	node scripts/demo-readonly-smoke.mjs http://localhost:8089
 
-demo-down:
-	$(DEMO) down -v
+test-stack-down:
+	$(TEST_STACK) down -v
 
 build:
 	docker compose build

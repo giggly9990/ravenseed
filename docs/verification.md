@@ -20,11 +20,11 @@ npm run build
 
 Go tests use fixtures and `httptest` servers in place of qui, TMDb, Sonarr, Radarr and Upload-Assistant; they cover upstream failures, partial responses, timeouts, pagination, conflicting media identities, duplicate results, API-key redaction, redirect refusal, unsupported ID capabilities, setup persistence, restart recovery, explicit target selection, the upload queue and duplicate upload reservations. Frontend tests run in jsdom and cover the UI interactions; there are no browser-automation tests, so visual checks are manual.
 
-## Demo smoke tests
+## Test stack smoke tests
 
-Start the [demo](demo.md) and run the scripts listed in [Development and verification](../README.md#development-and-verification) against its ports. They exercise searches, SSE, caching, matching settings, presets, torrent handoff, the upload queue, tracker monitors, Sonarr and Radarr IDs, upgrades and the read-only public port, against mocks only. No real torrent is added and no tracker upload is published.
+Start the [test stack](../README.md#test-stack) and run the scripts listed there against it. They exercise searches, SSE, caching, matching settings, presets, torrent handoff, the upload queue, tracker monitors, Sonarr and Radarr IDs and upgrades, against mocks only. No real torrent is added and no tracker upload is published.
 
-Also confirm with the demo that the containers run as UID 10001 with read-only root filesystems, report healthy, and serve the search, settings, history and API documentation pages.
+Also confirm with the test stack that the containers run as UID 10001 with read-only root filesystems, report healthy, and serve the search, settings, history and API documentation pages.
 
 ## Upgrades and live services
 

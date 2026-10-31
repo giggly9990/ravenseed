@@ -1,54 +1,87 @@
 # RavenSeed
 
-A local web application for finding equivalent releases across the indexers configured in qui. Search by IMDb or TMDb ID, compare release families and exact reported byte sizes, and find high-confidence families missing from a selected target's search results.
+RavenSeed is a local web app for finding and comparing releases across the trackers connected to qui. Search for a movie or TV show, choose the trackers to check, and pick a target tracker. RavenSeed helps you see what is already there and which releases may be worth reviewing for upload. It is packaged for both Docker and native installation.
 
-**Tracker monitors** can also scan existing torrents in qui from Tracker A, check them against Tracker B on a schedule, and mark potential upload candidates. Sending a candidate to Upload-Assistant is an explicit action. See [tracker monitors](docs/tracker-monitors.md).
+Its features include:
 
-**Upgrades** lists torrents you seed whose slot on the monitored tracker now holds a better or different release, such as a REPACK or another group's encode, with an action to add it to qui. See [upgrades](docs/upgrades.md).
+- **Search by media ID:** Enter an IMDb or TMDb ID. With metadata configured, RavenSeed connects matching IMDb, TMDb, and available TVDb IDs, then uses the ID each indexer supports.
+- **Compare releases:** View release details, reported sizes, tracker availability, and how confidently listings match, even when verified releases use different titles.
+- **Find possible upload candidates:** See releases that were not found on your chosen target tracker, with uncertain matches clearly marked for review.
+- **Filter and save searches:** Narrow results by details such as resolution and codec, save tracker selections, and revisit past searches.
+- **Monitor existing torrents:** Check torrents already in qui from one tracker against another on a schedule. Pause, resume, or request a fresh check.
+- **Identify torrents with Sonarr and Radarr:** Connect your instances so monitors know exactly which movie or episode each torrent is, including cross-seeds and torrents you no longer have, and can recognize listings with different titles or languages. RavenSeed only reads from Sonarr and Radarr and never changes them.
+- **Apply tracker rules:** Identify open release slots, versions that may coexist, and possible replacements, including banned groups and size or bitrate tiers. See the target releases behind each finding.
+- **Spot upgrades:** See which torrents you seed have been replaced on the target tracker by a better release, such as a REPACK or a season pack. Each one shows why, and you can add the new release to qui or dismiss it.
+- **Add releases to qui:** Choose a listing, destination, and optional category.
+- **Use Upload-Assistant:** Send an eligible candidate or queue an upload after a new torrent finishes downloading. RavenSeed spaces out submissions and shows each job's outcome.
+- **Automate with the API:** Everything in the web app is available through a REST API with an OpenAPI description and interactive docs at `/api/docs`. Use it from scripts or other tools, with token authentication for remote access. Search progress streams live as server-sent events.
 
-**Sonarr and Radarr** can supply IMDb, TMDb and TVDb IDs for those existing torrents. A torrent is matched by its hash in their download history, so monitors search Tracker B by ID. The IDs are cached for each torrent. See [Sonarr and Radarr IDs](docs/arr-integration.md).
+RavenSeed presents seed for your review based on your taste. It does not upload a release just because a search or monitor marked it as a candidate.
 
-**Indexer Policies** let you configure slot, coexistence, trump and manual-review rules for each target indexer. Findings appear on monitor candidates and saved search families without changing the existing matching confidence or Upload-Assistant workflow. See [Indexer Policies](docs/indexer-policies.md).
+![Search results comparing release families across three trackers, with the target tracker's status for each](docs/screenshots/search.png)
 
-**Per-indexer search overrides** let you choose Auto, IMDb, TMDb, TVDb (TV only), or title searches separately for movies and TV in **Settings > Per-indexer search**. See [search overrides](docs/search-overrides.md).
+![Tracker monitor listing torrents from one tracker with their status on the target: missing slot, coexistence, equivalent, occupied or needs review](docs/screenshots/monitors.png)
 
-The WebUI uses the project-specific [RavenSeed Glyphs](docs/ravenseed-glyphs.md) icon and brand system.
+![Upgrades page listing seeded torrents replaced on the target by a season pack, a REPACK or another group's release](docs/screenshots/upgrades.png)
 
-## Run with Docker Desktop
+![Indexer policy settings with slot traits per release class and trump rules](docs/screenshots/indexer-policies.png)
+
+The screenshots use the mock data from the [test stack](#test-stack); no real tracker is shown.
+
+## Install
+
+Each [release](https://github.com/giggly9990/ravenseed/releases) publishes a multi-arch image and native packages for amd64 and arm64.
+
+### Docker
 
 ```sh
+git clone https://github.com/giggly9990/ravenseed.git
+cd ravenseed
 docker compose up -d --build
 ```
 
-Open [http://localhost:8088](http://localhost:8088), choose **Connect qui**, and enter the qui URL and API key.
-
-- For qui running on the Docker host, use `http://host.docker.internal:7476`.
-- For qui on another host, use its reachable HTTP or HTTPS URL.
-- For qui on a shared Docker network, see the override below.
-- Include any configured qui base path in the URL. Do not append `/api`.
-- Settings warns when a plain `http://` URL for qui, Upload-Assistant, Sonarr or Radarr points outside your local network, because its API key would travel unencrypted. Loopback, private IPs, `.lan`/`.local`/`.internal` names and single-label Docker names are exempt.
-
-In Settings > TMDb metadata, save a TMDb API key or Read Access Token to resolve IDs, show artwork and select TV seasons. Direct-ID searches still work without metadata. See [media resolution](docs/media-resolution.md).
-
-The production stack has one non-root container, a read-only root filesystem, and a named SQLite volume. Setup can be completed without editing files. The API key is never returned after saving. A key entered through setup is stored in the private SQLite volume; use Docker secrets if you do not want the key stored there. Search results can contain sensitive download URLs, so protect database backups too.
-
-Compose publishes on `127.0.0.1` by default. Direct binary execution also defaults to loopback. Non-loopback unauthenticated exposure refuses startup unless explicitly allowed. Without authentication, only loopback host names such as `localhost` are served; to open the UI by a LAN name or IP after changing `BIND_ADDRESS`, list it in `ALLOWED_HOSTS`. For remote access, enable [browser login](docs/browser-login.md) (`AUTH_MODE=session`) and use TLS at a reverse proxy; an API token authenticates automation only and does not unlock the WebUI. See [deployment and data protection](docs/security.md) for custom Docker deployments and authenticated proxies.
-
-## Install a release
-
-Each [release](https://github.com/giggly9990/ravenseed/releases) publishes a multi-arch image and native packages for amd64 and arm64.
+To use the published image instead of building, set `image: ghcr.io/giggly9990/ravenseed:<version>` in a Compose override and drop `build`:
 
 ```sh
 docker pull ghcr.io/giggly9990/ravenseed:latest
 ```
 
-To use the published image instead of building, set `image: ghcr.io/giggly9990/ravenseed:<version>` in a Compose override and drop `build`.
+### Linux packages
 
-**Debian/Ubuntu, Fedora/RHEL, Alpine:** install the `.deb`, `.rpm` or `.apk`, edit `/etc/ravenseed/ravenseed.env`, then `systemctl enable --now ravenseed`. Data lives in `/var/lib/ravenseed`; the service listens on `127.0.0.1:8080`.
+Install the `.deb`, `.rpm` or `.apk` for your distribution, edit `/etc/ravenseed/ravenseed.env`, then run `systemctl enable --now ravenseed`. Data lives in `/var/lib/ravenseed`, and the service listens on `127.0.0.1:8080`.
 
-**Linux, macOS, Windows archives:** extract and run `ravenseed` (`ravenseed.exe`). It serves the bundled `web/` folder next to the binary and stores data in `data/` under the working directory. Configure it with the variables in `.env.example`.
+### Archives (Linux, macOS, Windows)
+
+Extract the archive and run `ravenseed` (`ravenseed.exe` on Windows). It serves the bundled `web/` folder next to the binary and stores data in `data/` under the working directory. Configure it with the variables in `.env.example`.
 
 `ravenseed version` prints the build version.
+
+## Connect qui
+
+Open [http://localhost:8088](http://localhost:8088) (Docker) or [http://localhost:8080](http://localhost:8080) (packages and archives), choose **Connect qui**, and enter the qui URL and API key.
+
+- For qui running on the Docker host, use `http://host.docker.internal:7476`.
+- For qui on another host, use its reachable HTTP or HTTPS URL.
+- For qui on a shared Docker network, see [Shared qui network](#shared-qui-network).
+- Include any configured qui base path in the URL. Do not append `/api`.
+- Settings warns when a plain `http://` URL for qui, Upload-Assistant, Sonarr or Radarr points outside your local network, because its API key would travel unencrypted. Loopback, private IPs, `.lan`/`.local`/`.internal` names and single-label Docker names are exempt.
+
+In Settings > TMDb metadata, save a TMDb API key or Read Access Token to resolve IDs, show artwork and select TV seasons. Direct-ID searches still work without metadata. See [media resolution](docs/media-resolution.md).
+
+The Docker stack has one non-root container, a read-only root filesystem, and a named SQLite volume. Setup can be completed without editing files. The API key is never returned after saving. A key entered through setup is stored in the private SQLite volume; use Docker secrets if you do not want the key stored there. Search results can contain sensitive download URLs, so protect database backups too.
+
+Compose publishes on `127.0.0.1` by default. Direct binary execution also defaults to loopback. Non-loopback unauthenticated exposure refuses startup unless explicitly allowed. Without authentication, only loopback host names such as `localhost` are served; to open the UI by a LAN name or IP after changing `BIND_ADDRESS`, list it in `ALLOWED_HOSTS`. For remote access, enable [browser login](docs/browser-login.md) (`AUTH_MODE=session`) and use TLS at a reverse proxy; an API token authenticates automation only and does not unlock the WebUI. See [deployment and data protection](docs/security.md) for custom Docker deployments and authenticated proxies.
+
+## Documentation
+
+- [Tracker monitors](docs/tracker-monitors.md) and [upgrades](docs/upgrades.md)
+- [Sonarr and Radarr IDs](docs/arr-integration.md)
+- [Indexer Policies](docs/indexer-policies.md)
+- [Per-indexer search overrides](docs/search-overrides.md)
+- [Matching rules](docs/matching.md) and [advanced matching](docs/advanced-matching.md)
+- [Upload-Assistant workflow](docs/upload-workflow.md)
+- [Browser login](docs/browser-login.md) and [deployment and data protection](docs/security.md)
+- [API usage](docs/api.md) and [architecture](docs/architecture.md)
 
 ## Environment configuration
 
@@ -83,7 +116,7 @@ Copy `.env.example` to `.env` to override defaults. Environment values take prec
 | `LOG_LEVEL` | `info` | `debug`, `info`, `warn`, or `error` |
 | `TZ` | `UTC` | Container time zone |
 
-The binary also accepts `DATABASE_PATH`, `LISTEN_ADDR`, `LISTEN_PORT`, and `WEB_DIR`. Compose sets these to container paths and port 8080, and sets `PUBLISHED_BIND_ADDRESS` to the host `BIND_ADDRESS` for startup exposure validation. `TMDB_BASE_URL` (default `https://api.themoviedb.org/3`) changes the TMDb API address; the demo points it at the mock.
+The binary also accepts `DATABASE_PATH`, `LISTEN_ADDR`, `LISTEN_PORT`, and `WEB_DIR`. Compose sets these to container paths and port 8080, and sets `PUBLISHED_BIND_ADDRESS` to the host `BIND_ADDRESS` for startup exposure validation. `TMDB_BASE_URL` (default `https://api.themoviedb.org/3`) changes the TMDb API address.
 
 To use Docker secrets, add a Compose override that mounts a secret and sets `QUI_API_KEY_FILE=/run/secrets/qui_api_key` or `API_TOKEN_FILE=/run/secrets/api_token`. File values take precedence over the corresponding environment value. Use a secret file readable by UID 10001.
 
@@ -113,20 +146,6 @@ docker compose -f docker-compose.yml -f docker-compose.example.yml up -d --build
 
 The override uses `http://qui:7476`. Change the hostname if qui has a different network alias. The default Compose file does not require an external network.
 
-## Try the complete workflow with fixture data
-
-This isolated stack uses mock qui, TMDb, Sonarr, Radarr and Upload-Assistant services and a separate volume. Its indexers are explicitly named Demo Atlas, Demo Orbit and Demo Beacon. The public demo port allows only searches and other changes that reach the mocks, so it can be shown publicly. See [docs/demo.md](docs/demo.md) for what it covers.
-
-```sh
-docker compose -p ravenseed-demo -f docker-compose.yml -f docker-compose.demo.yml up -d --build
-```
-
-Open [http://localhost:8089](http://localhost:8089) and search `tt0133093`. Three families appear, with two target opportunities and an extra byte-size variant. This is test data, not a live tracker search. **Tracker monitors** and **Upgrades** fill in over about eight minutes. The demo override requires Docker Compose 2.24.4 or newer for `!override`.
-
-```sh
-docker compose -p ravenseed-demo -f docker-compose.yml -f docker-compose.demo.yml down
-```
-
 ## Matching behavior
 
 - Preserve original qui results and original `autobrr/rls` parser output.
@@ -146,7 +165,7 @@ An `EXACT` label describes reported metadata and bytes. It does not verify torre
 
 Settings > Torrent defaults lets you choose a default qui destination and enabled categories per instance. Settings > Upload-Assistant supports named free-text UA flag presets, with an optional default and a per-upload picker. Example flags: `--anon --modq`.
 
-All pickers share the red dropdown style. Click outside or press Escape to close them. Multiple selections stay open while choosing values. Results support ascending and descending sorting across the full saved result set before pagination, without starting another search.
+Click outside a picker or press Escape to close it. Multiple selections stay open while choosing values. Results support ascending and descending sorting across the full saved result set before pagination, without starting another search.
 
 Choose a resolution before searching. The selection filters the view; RavenSeed still collects and retains every returned resolution. Changing it in the search form or results filters the same saved search without contacting trackers. The choice is included in the page URL and survives reloads.
 
@@ -173,6 +192,26 @@ Configure Settings > Upload-Assistant with its WebUI URL, API token, target trac
 
 The UI uses the same public endpoints as external clients. Lists of jobs, results, families and candidates are paginated. Events support `Last-Event-ID` replay. Failed jobs and partial results remain in history; only fully successful searches are reused from cache.
 
+## Operations
+
+```sh
+docker compose ps
+docker compose logs --tail=100 ravenseed
+docker compose restart ravenseed
+docker compose down
+```
+
+`down` preserves the named data volume. Back up the volume with the app stopped, or use SQLite's backup API. Do not copy only the database file while WAL writes are active. Interrupted searches are marked failed after restart and can be refreshed. History is retained by default. Optional history and raw-result retention run on startup and hourly; see [retention and backup limits](docs/security.md#stored-data-and-retention).
+
+For production, a suggested starting policy is 30 days of search history and seven days of raw tracker responses. Set these in `.env` when that retention suits your workflow:
+
+```dotenv
+HISTORY_RETENTION=720h
+RAW_RESULT_RETENTION=168h
+```
+
+Defaults remain `0` so upgrades preserve existing data. History retention also deletes finished, failed and cancelled upload jobs of the same age. Active or needs-review uploads protect their search history. Download URLs remain sensitive until the corresponding history is removed, and pruning does not erase earlier backups.
+
 ## Development and verification
 
 Requirements: Go 1.26 and Node 26. Docker can build everything without either tool installed locally.
@@ -194,38 +233,21 @@ Docker test target:
 docker build --target test -t ravenseed-tests .
 ```
 
-With the demo stack running, exercise the HTTP workflows with the scripts in `scripts/`. Each takes the base URL as its first argument. The demo scripts check for the demo's mock qBittorrent instance and change settings, so run them only against the demo; `auth-smoke.mjs` accepts only a localhost URL. Apart from `MOCK_QUI_URL` below, no script reads environment variables.
+### Test stack
+
+`make smoke` starts an isolated stack on `http://localhost:8090` with mock qui, TMDb, Sonarr, Radarr and Upload-Assistant services and its own volume, seeds it and runs the search smoke test. CI runs the same steps. `make test-stack-down` removes it with its data. Its indexers are named Demo Atlas, Demo Orbit and Demo Beacon; nothing reaches a real tracker.
+
+The scripts in `scripts/` exercise the HTTP workflows and take the base URL as their first argument. The test-stack scripts check for its mock qBittorrent instance and change settings, so run them only against the test stack; `auth-smoke.mjs` accepts only a localhost URL. Apart from `MOCK_QUI_URL` below, no script reads environment variables.
 
 | Script | Default URL | Covers |
 | --- | --- | --- |
-| `node scripts/smoke.mjs` | `http://localhost:8090` (admin port) | Movie, TV and episode searches, cache reuse, target selection, variants, filters, pagination, raw results, SSE, served assets, matching settings, historical rule snapshots, alternate titles, group aliases, anime mappings, tracker flags, presets and a mock torrent handoff. The handoff does not download or add a real torrent. |
-| `node scripts/upload-smoke.mjs` | `http://localhost:8090` | Upload-Assistant handoff, path mapping, flag presets and reupload against the mocks. It changes torrent defaults and Upload-Assistant settings and restores them afterwards, except that an Upload-Assistant token saved for another URL is cleared, with a warning. It passes once per demo volume; see [demo tests](docs/demo.md#tests). |
-| `node scripts/monitor-smoke.mjs` | `http://localhost:8090` | Tracker monitor results, Sonarr and Radarr IDs, upgrades and arr connection tests. Waits until every demo torrent is checked. |
-| `node scripts/demo-seed.mjs` | `http://localhost:8090` | Configures mock Sonarr and Radarr, a Demo Beacon policy and a Demo Atlas monitor, and turns Upload-Assistant off, so the public demo refuses **Upload to target**. It waits up to two minutes for RavenSeed and mock-qui to start. The `demo-seed` container runs it at startup. `MOCK_QUI_URL` (default `http://mock-qui:7476`) is the mocks' address as RavenSeed reaches them. |
-| `node scripts/demo-readonly-smoke.mjs` | `http://localhost:8089` (public port) | The public demo port refuses changes outside its allowlist and still serves the app. Run after seeding. |
+| `node scripts/demo-seed.mjs` | `http://localhost:8090` | Configures mock Sonarr and Radarr, a Demo Beacon policy and a Demo Atlas monitor, and turns Upload-Assistant off. Run it first. `MOCK_QUI_URL` (default `http://mock-qui:7476`) is the mocks' address as RavenSeed reaches them. |
+| `node scripts/smoke.mjs` | `http://localhost:8090` | Movie, TV and episode searches, cache reuse, target selection, variants, filters, pagination, raw results, SSE, served assets, matching settings, historical rule snapshots, alternate titles, group aliases, anime mappings, tracker flags, presets and a mock torrent handoff. The handoff does not download or add a real torrent. |
+| `node scripts/upload-smoke.mjs` | `http://localhost:8090` | Upload-Assistant handoff, path mapping, flag presets and reupload against the mocks. It changes torrent defaults and Upload-Assistant settings and restores them afterwards, except that an Upload-Assistant token saved for another URL is cleared, with a warning. It passes once per test-stack volume. |
+| `node scripts/monitor-smoke.mjs` | `http://localhost:8090` | Tracker monitor results, Sonarr and Radarr IDs, upgrades and arr connection tests. Waits until every mock torrent is checked, about eight minutes on a fresh stack. |
 | `node scripts/auth-smoke.mjs [url] [password-file] [username]` | `http://localhost:8088`, `secrets/web_password`, `admin` | Browser login on a local instance with web credentials configured: protected pages and APIs, login, origin checks and logout. |
 
 Unit and integration tests cover parsing, hard mismatches, exact-size variants, duplicate coverage, target failures, timeouts, partial responses, identity evidence, TV season forwarding, cache refresh, durable SSE, authentication, validation, and restart recovery. CI additionally runs race detection and builds and scans the image. Pushing a `v*` tag publishes scanned `linux/amd64` and `linux/arm64` images to GHCR and a GitHub release with archives and packages built by [GoReleaser](.goreleaser.yaml). Run `goreleaser release --snapshot --clean` to build them locally into `.release/`.
-
-## Operations
-
-```sh
-docker compose ps
-docker compose logs --tail=100 ravenseed
-docker compose restart ravenseed
-docker compose down
-```
-
-`down` preserves the named data volume. Back up the volume with the app stopped, or use SQLite's backup API. Do not copy only the database file while WAL writes are active. Interrupted searches are marked failed after restart and can be refreshed. History is retained by default. Optional history and raw-result retention run on startup and hourly; see [retention and backup limits](docs/security.md#stored-data-and-retention).
-
-For production, a suggested starting policy is 30 days of search history and seven days of raw tracker responses. Set these in `.env` when that retention suits your workflow:
-
-```dotenv
-HISTORY_RETENTION=720h
-RAW_RESULT_RETENTION=168h
-```
-
-Defaults remain `0` so upgrades preserve existing data. History retention also deletes finished, failed and cancelled upload jobs of the same age. Active or needs-review uploads protect their search history. Download URLs remain sensitive until the corresponding history is removed, and pruning does not erase earlier backups.
 
 See [repository verification](docs/repository-policy.md) for CI enablement and the required branch protection policy.
 

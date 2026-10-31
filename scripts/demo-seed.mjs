@@ -1,9 +1,7 @@
-// Configures the isolated demo for the tracker monitor workflow: mock Radarr
-// and Sonarr, an indexer policy on Demo Beacon, and a Demo Atlas monitor.
-// Running it again leaves existing demo settings in place, except that
-// Upload-Assistant is always turned off: with it off, the public add route
-// refuses Upload to target. It waits up to two minutes for RavenSeed and the
-// mock qui to start. A failed check exits nonzero with its reason.
+// Seeds the test stack for the tracker monitor workflow: mock Radarr and
+// Sonarr, an indexer policy on Demo Beacon, and a Demo Atlas monitor. Running
+// it again keeps existing settings, except that Upload-Assistant is turned
+// off. It waits up to two minutes for RavenSeed and the mock qui to start.
 import assert from "node:assert/strict";
 
 const base = process.argv[2] ?? "http://localhost:8090";

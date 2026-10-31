@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"net/netip"
 	"net/url"
+	"path"
 	"ravenseed/internal/auth"
 	"ravenseed/internal/config"
 	"slices"
@@ -222,9 +223,18 @@ func (a *API) validBearer(header string) bool {
 	return subtle.ConstantTimeCompare(got[:], want[:]) == 1
 }
 
+// safeNext keeps a same-site path to return to after sign-in, else "/". Paths
+// with empty or dot segments are refused rather than left to http.Redirect's
+// cleaning.
 func safeNext(value string) string {
 	parsed, err := url.Parse(value)
-	if err != nil || !strings.HasPrefix(value, "/") || parsed.Host != "" || parsed.IsAbs() || strings.HasPrefix(parsed.Path, "//") || strings.Contains(value+parsed.Path, "\\") || strings.ContainsFunc(value+parsed.Path, unicode.IsControl) || parsed.Path == "/login" || parsed.Path == "/logout" || strings.HasPrefix(parsed.Path, "/api/") {
+	if err != nil || !strings.HasPrefix(value, "/") || strings.HasPrefix(value, "//") || strings.HasPrefix(value, "/\\") {
+		return "/"
+	}
+	if clean := path.Clean(parsed.Path); clean != parsed.Path && clean+"/" != parsed.Path {
+		return "/"
+	}
+	if parsed.Host != "" || parsed.IsAbs() || strings.HasPrefix(parsed.Path, "//") || strings.Contains(value+parsed.Path, "\\") || strings.ContainsFunc(value+parsed.Path, unicode.IsControl) || parsed.Path == "/login" || parsed.Path == "/logout" || strings.HasPrefix(parsed.Path, "/api/") {
 		return "/"
 	}
 	return value
