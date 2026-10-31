@@ -1,3 +1,6 @@
+# Isolated test stack: RavenSeed against mock qui, TMDb, Sonarr, Radarr and
+# Upload-Assistant services, on its own volume. `make smoke` starts and seeds
+# it; see the README's Test stack section.
 services:
   ravenseed:
     image: ravenseed-demo/app:latest
@@ -11,28 +14,18 @@ services:
       WEB_PASSWORD_HASH_FILE: ""
       WEB_COOKIE_SECURE: "true"
       PUBLISHED_BIND_ADDRESS: 127.0.0.1
-      # Only demo-proxy may forward a visitor's address (for per-client rate
-      # limits); requests through the admin port arrive from the network
-      # gateway and are never trusted. Set DEMO_PROXY_IP with DEMO_SUBNET.
-      TRUSTED_PROXIES: ${DEMO_PROXY_IP:-10.247.89.250}
-      # Auth is off, so only these Host names (plus loopback) are served.
-      # Keep ravenseed (demo-seed reaches http://ravenseed:8080) and add the
-      # public demo hostname, plus the DEMO_BIND_ADDRESS IP if you browse by IP.
-      ALLOWED_HOSTS: ${DEMO_ALLOWED_HOSTS:-ravenseed}
       QUI_URL: http://mock-qui:7476
       QUI_API_KEY: demo-key
       TMDB_TOKEN: demo-metadata-key
       TMDB_BASE_URL: http://mock-qui:7476/tmdb/3
       DEFAULT_TARGET_INDEXER: 3
-      # Visitors start searches; drop them, and ended upload jobs, after a day.
-      HISTORY_RETENTION: 24h
-    # Admin port for the seed and smoke scripts. AUTH_MODE is none, so it
-    # has full access to settings: it binds to loopback only; never publish it.
+    # AUTH_MODE is none, so this port has full access to settings: it binds to
+    # loopback only.
     ports: !override
       - "127.0.0.1:8090:8080"
     volumes: !override
       - demo-data:/data
-    # The demo talks to the mocks only; drop the base file's route to the host.
+    # The stack talks to the mocks only; drop the base file's route to the host.
     extra_hosts: !reset []
     depends_on:
       - mock-qui
@@ -46,66 +39,6 @@ services:
       - ALL
     security_opt:
       - no-new-privileges:true
-  # The demo visitors use: settings are read-only (see demo/nginx.conf). Set
-  # DEMO_BIND_ADDRESS to publish it beyond this machine.
-  demo-proxy:
-    image: ravenseed-demo/proxy:latest
-    build:
-      context: .
-      dockerfile: demo/Dockerfile
-      target: proxy
-    ports:
-      - "${DEMO_BIND_ADDRESS:-127.0.0.1}:8089:8080"
-    networks:
-      default:
-        ipv4_address: ${DEMO_PROXY_IP:-10.247.89.250}
-      edge: {}
-    read_only: true
-    tmpfs:
-      - /tmp:size=16m
-    cap_drop:
-      - ALL
-    security_opt:
-      - no-new-privileges:true
-    depends_on:
-      - ravenseed
-  # Configures mock Radarr and Sonarr, a Demo Beacon policy and a Demo Atlas
-  # monitor once RavenSeed is up, and turns Upload-Assistant off; existing
-  # demo settings are kept. It runs once, waiting up to two minutes for
-  # RavenSeed and mock-qui to start.
-  demo-seed:
-    image: ravenseed-demo/seed:latest
-    build:
-      context: .
-      dockerfile: demo/Dockerfile
-      target: seed
-    command: ["http://ravenseed:8080"]
-    read_only: true
-    cap_drop:
-      - ALL
-    security_opt:
-      - no-new-privileges:true
-    restart: "no"
-    depends_on:
-      - ravenseed
-
-# Fixed subnets so Docker never auto-assigns one that clashes with a real
-# network. Override with DEMO_SUBNET (plus DEMO_PROXY_IP inside it) and
-# DEMO_EDGE_SUBNET if in use; demo/nginx.conf trusts CF-Connecting-IP from the
-# edge subnet, so update it too. Only demo-proxy joins the edge network, the
-# one a tunnel container attaches to. Unlike demo/portainer-stack.yml, the
-# default network can't be internal here: Docker doesn't publish ports (the
-# admin port) on internal networks.
-networks:
-  default:
-    ipam:
-      config:
-        - subnet: ${DEMO_SUBNET:-10.247.89.0/24}
-  edge:
-    name: ravenseed-demo-edge
-    ipam:
-      config:
-        - subnet: ${DEMO_EDGE_SUBNET:-10.247.90.0/24}
 
 volumes:
   demo-data:

@@ -72,7 +72,7 @@ All routes use RavenSeed's normal authentication and origin checks. No tracker i
 
 ## Verification
 
-With the isolated demo running, execute `node scripts/upload-smoke.mjs`; it uses the demo's admin port, 8090. It tests an automatic handoff against mock qui and mock Upload-Assistant. It does not download files or publish a tracker upload. It passes once per demo volume: repeating it with the same demo database intentionally encounters the duplicate reservation for the fixture's fixed torrent hash and fails with `needs_review`. Reset the demo with `down -v` to run it again.
+With the [test stack](../README.md#test-stack) running, execute `node scripts/upload-smoke.mjs`; it uses port 8090. It tests an automatic handoff against mock qui and mock Upload-Assistant. It does not download files or publish a tracker upload. It passes once per test-stack volume: repeating it with the same database intentionally encounters the duplicate reservation for the fixture's fixed torrent hash and fails with `needs_review`. Reset the stack with `make test-stack-down` to run it again.
 
 ## Torrent defaults and flag presets
 

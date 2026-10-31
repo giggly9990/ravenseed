@@ -22,9 +22,9 @@ updates:
       # typescript-eslint has no TypeScript 7 support yet; revisit when it does.
       - dependency-name: typescript
         update-types: [version-update:semver-major]
-  # Updates the tags and digests pinned in Dockerfile and demo/Dockerfile.
+  # Updates the tags and digests pinned in the Dockerfile.
   - package-ecosystem: docker
-    directories: [/, /demo]
+    directory: /
     target-branch: develop
     schedule:
       interval: weekly

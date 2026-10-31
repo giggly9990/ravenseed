@@ -168,7 +168,7 @@ func TestLoginValidationAndThrottle(t *testing.T) {
 	if w := browserRequest(handler, "POST", "/login", form, nil, "https://raven.example"); w.Code != 429 {
 		t.Fatal("login not throttled")
 	}
-	for _, value := range []string{"https://attacker.example", "//attacker.example", "/%2fattack", "/\\attack", "/%09/attack", "/login", "/api/v1/settings"} {
+	for _, value := range []string{"https://attacker.example", "//attacker.example", "/%2fattack", "/\\attack", "/%09/attack", "///attacker.example", "/.//attacker.example", "/a/../login", "/login", "/api/v1/settings"} {
 		if safeNext(value) != "/" {
 			t.Fatalf("unsafe redirect accepted: %q", value)
 		}

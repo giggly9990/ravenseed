@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 
-// Run against the seeded demo's admin port (see scripts/demo-seed.mjs). A
-// fresh demo needs about eight minutes to check every torrent.
+// Run against the seeded test stack (see scripts/demo-seed.mjs). A
+// fresh stack needs about eight minutes to check every torrent.
 const base = process.argv[2] ?? "http://localhost:8090";
 async function call(path, body, method = "POST") {
   const res = await fetch(
