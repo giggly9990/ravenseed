@@ -31,14 +31,14 @@ ARG TARGETOS=linux
 ARG TARGETARCH
 RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -trimpath -ldflags="-s -w" -o /out/mockqui ./cmd/mockqui
 
-FROM alpine:3.23@sha256:ff7f0c727dd796aa36787bfcd9a64bf35a6ce72a73451b3359fde849b6703d63 AS mock
+FROM alpine:3.24@sha256:be2656061b536c1883c4034790e21d0a09c5aaaf51968b89368a3c0371ea2c9a AS mock
 COPY --from=build-mock /out/mockqui /mockqui
 USER 10001:10001
 EXPOSE 7476
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 CMD ["wget", "-q", "-O", "/dev/null", "--header", "X-API-Key: demo-key", "http://127.0.0.1:7476/api/instances"]
 ENTRYPOINT ["/mockqui"]
 
-FROM alpine:3.23@sha256:ff7f0c727dd796aa36787bfcd9a64bf35a6ce72a73451b3359fde849b6703d63 AS runtime
+FROM alpine:3.24@sha256:be2656061b536c1883c4034790e21d0a09c5aaaf51968b89368a3c0371ea2c9a AS runtime
 RUN apk add --no-cache ca-certificates tzdata && addgroup -g 10001 ravenseed && adduser -D -u 10001 -G ravenseed ravenseed && mkdir /data && chown ravenseed:ravenseed /data
 WORKDIR /app
 COPY --from=build /out/ravenseed /app/ravenseed
