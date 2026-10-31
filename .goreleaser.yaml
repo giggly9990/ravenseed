@@ -67,13 +67,14 @@ checksum:
   name_template: checksums.txt
 
 changelog:
-  use: github
+  use: git
   sort: asc
+  abbrev: 7
+  format: '{{ .SHA }} {{ .Message }}'
   filters:
     exclude:
-      - '^docs:'
-      - '^test:'
-      - '^chore\(deps\)'
+      - '^Merge pull request'
+      - '^Merge branch'
 
 release:
   github:
@@ -81,3 +82,43 @@ release:
     name: ravenseed
   prerelease: auto
   draft: false
+  footer: |
+    ## Install
+
+    **Docker** (linux/amd64, linux/arm64)
+
+    ```sh
+    docker pull ghcr.io/giggly9990/ravenseed:{{ .Version }}
+    ```
+
+    With the repository's Compose file, set `image: ghcr.io/giggly9990/ravenseed:{{ .Version }}` in an override and drop `build`.
+
+    **Debian / Ubuntu**
+
+    ```sh
+    curl -LO https://github.com/giggly9990/ravenseed/releases/download/{{ .Tag }}/ravenseed_{{ .Version }}_amd64.deb
+    sudo apt install ./ravenseed_{{ .Version }}_amd64.deb
+    ```
+
+    **Fedora / RHEL**
+
+    ```sh
+    sudo dnf install https://github.com/giggly9990/ravenseed/releases/download/{{ .Tag }}/ravenseed_{{ .Version }}_amd64.rpm
+    ```
+
+    After installing either package, set your qui URL and API key in `/etc/ravenseed/ravenseed.env`, then run `sudo systemctl enable --now ravenseed` and open http://localhost:8080.
+
+    **Alpine**
+
+    ```sh
+    wget https://github.com/giggly9990/ravenseed/releases/download/{{ .Tag }}/ravenseed_{{ .Version }}_amd64.apk
+    apk add --allow-untrusted ./ravenseed_{{ .Version }}_amd64.apk
+    ```
+
+    The package is unsigned, hence `--allow-untrusted`. It has no OpenRC service; edit `/etc/ravenseed/ravenseed.env`, then start it with `su -s /bin/sh ravenseed -c 'set -a; . /etc/ravenseed/ravenseed.env; exec ravenseed'`.
+
+    On ARM, replace `amd64` with `arm64` in the file names.
+
+    **Linux, macOS, Windows archives:** download the archive for your system below, extract it and run `ravenseed` (`ravenseed.exe` on Windows), then open http://localhost:8080. Configuration uses the variables in the included `.env.example`.
+
+    Verify a download with `sha256sum --ignore-missing -c checksums.txt`.
