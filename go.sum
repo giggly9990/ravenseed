@@ -1,5 +1,5 @@
-github.com/autobrr/rls v0.10.0 h1:0coSaXgxpH5mwQQziHqAvxK3NjT2bna2c5a5Y9KqwxI=
-github.com/autobrr/rls v0.10.0/go.mod h1:Kg9MouMj3Kdg1ql0r8Hl4bcSyC1QidxiKiip5QWUlBc=
+github.com/autobrr/rls v0.11.0 h1:LlYzVV50F6pugKIneVs7piqwrjN33/ftS6H76DJXlmY=
+github.com/autobrr/rls v0.11.0/go.mod h1:y8kqxXKH+n61TVBw9bg5qgsf0py2R8K+1f77lNUGkTY=
 github.com/cytec/releaseparser v0.0.0-20200706155913-2341b265c370 h1:g9q5BGfDdhcXn4EmVZD8UydPXrvhSvgz3FRBn7zAJNs=
 github.com/cytec/releaseparser v0.0.0-20200706155913-2341b265c370/go.mod h1:T6MvuEQy8BSy+4Aol7AjqObp2g3wTv2HjcFrGToHVVE=
 github.com/dustin/go-humanize v1.1.0 h1:dbKTrvD0klcbBV/h4AWJdMuZogJACoMlvWIWZ5b2xWg=
